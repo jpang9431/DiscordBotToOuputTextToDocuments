@@ -1,4 +1,4 @@
 # DiscordBotToOuputTextToDocuments
-Replace the token with the discord.py api key that has permission to read messages.
-fullTextOutputFilePath should be replaced by the path of the text document you want the data to be written to from the outputtotxt slash command. In the document each line with be author,message.
-sepicalTextOutputFilePath should be repalced by the path of the text document you want the data to be written to from the getspecialcombinations.
+Remane templateconfig.json to config.json and replace the token with you discord bot token
+You can also change the file path to write to a different file (a file is created if not found)
+Make sure to run bot.py prior to running interpret.py

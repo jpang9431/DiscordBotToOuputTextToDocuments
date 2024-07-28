@@ -1,0 +1,8 @@
+{
+    "token":"",
+    "fullTextOutputFilePath":"Raw/full.txt",
+    "sepicalTextOutputFilePath":"Raw/special.txt",
+    "wordCountFile":"Data Files/WordCount.json",
+    "specialCountFile":"Data Files/Special.json",
+    "characterCountFile":"Data Files/CharacterCount.json"
+}
