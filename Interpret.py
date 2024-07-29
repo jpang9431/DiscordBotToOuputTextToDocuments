@@ -2,6 +2,8 @@ import json
 import os
 import re
 import threading
+import networkx as nx
+import matplotlib.pyplot as plt
 
 secertFile = open("config.json")
 fileData = json.load(secertFile)
@@ -11,6 +13,8 @@ sepicalTextOutputFilePath = fileData["sepicalTextOutputFilePath"]
 wordCountFilePath = fileData["wordCountFile"]
 specialCountFilePath = fileData["specialCountFile"]
 charCountFilePath = fileData["characterCountFile"]
+
+pingGraph = fileData["pingGraph"]
 
 def addWordsToDictionary(dict, everyoneDict, words):
     for word in words:
@@ -36,7 +40,7 @@ def writeToFileFromDict(filePath, dictionary):
                 string = ","+string
             tempDict = dictionary[key]
             f.write('"'+key+'":')
-            f.write(json.dumps(sorted(tempDict.items(), key=lambda item: item[1], reverse=True), ensure_ascii=False)+string)
+            f.write(json.dumps(dict(sorted(tempDict.items(), key=lambda item: item[1], reverse=True)), ensure_ascii=False)+string)
         f.write("}")
         f.close()
 
@@ -95,4 +99,44 @@ def interpretMessage():
     print("Done")
     file.close()
 
+def printUTF8(text):
+    print(text.encode("utf8"))
+    
+def graph():
+    graphAsAdjacenyList = dict()
+    validPings = []
+    with open(sepicalTextOutputFilePath, "r", encoding="utf8") as f:
+        lines = f.readlines()
+        for line in lines:
+            line = line[:-1]
+            data = line.split(",")
+            if (data[2]=="User Ping"):
+                validPings.append(data[1])
+        f.close()  
+    with open(specialCountFilePath, "r", encoding="utf8") as f:
+        specialDicts = json.load(f)
+        for key in specialDicts:
+            if key!="Everyone":
+                adjancyDict= dict()
+                userDictionary = specialDicts.get(key) 
+                for ping in validPings:
+                    if ping in userDictionary:
+                        adjancyDict[ping] = userDictionary[ping]
+                graphAsAdjacenyList[key] = adjancyDict         
+        f.close()
+    writeToFileFromDict(pingGraph, graphAsAdjacenyList)
+
+def generateGraph():
+    file = open(pingGraph, "r", encoding="utf8")
+    data = json.load(file)
+    graph = nx.DiGraph()
+    for key, value in data.items():
+        for altKey in value.keys():
+            graph.add_edge(key, altKey[1:], weight = value[altKey])
+    pos = nx.spring_layout(graph)
+    nx.draw(graph, pos, with_labels=True, node_size=9000, node_color="skyblue", edge_color="gray")
+    plt.show()
+    
 interpretMessage()
+graph()
+generateGraph()
