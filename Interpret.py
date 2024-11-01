@@ -13,6 +13,7 @@ sepicalTextOutputFilePath = fileData["sepicalTextOutputFilePath"]
 wordCountFilePath = fileData["wordCountFile"]
 specialCountFilePath = fileData["specialCountFile"]
 charCountFilePath = fileData["characterCountFile"]
+linkCountFilePath = fileData["linksFile"]
 
 pingGraph = fileData["pingGraph"]
 
@@ -51,6 +52,8 @@ def interpretMessage():
     userSpeical["Everyone"] = dict()
     userChar = dict()
     userChar["Everyone"] = dict()
+    userLink = dict()
+    userLink["Everyone"] = dict()
     speical = "("
     with open(sepicalTextOutputFilePath, "r", encoding="utf8") as f:
         lines = f.readlines()
@@ -63,11 +66,14 @@ def interpretMessage():
         f.close()
     speicalRegEx = re.compile(speical)
     wordRegEx = re.compile(r'\w+|[^\s\w]')
+    linkRegEx = re.compile(r'http://[^\s]+|https://[^\s]+')
     file = open(fullTextOutputFilePath, "r", encoding="utf8")
     lines = file.readlines()
     for line in lines:
         list = line.split(",",1)
         user = list[0]
+        links = re.findall(linkRegEx, list[1])
+        list[1] = re.sub(linkRegEx, '', list[1])
         speicalWords = re.findall(speicalRegEx, list[1])
         words = re.findall(wordRegEx, list[1])
         chars = re.findall(r".",list[1])
@@ -75,27 +81,35 @@ def interpretMessage():
             userSpeical[user] = dict()
             userChar[user] = dict()
             userWordsDictionary[user] = dict()
+            userLink[user] = dict()
         userSpeicalDict = userSpeical[user]
         userWordsDict = userWordsDictionary[user]
         userCharDict= userChar[user]
+        userLinkDict = userLink[user]
         speicalThread = threading.Thread(target=addWordsToDictionary, args=(userSpeicalDict, userSpeical["Everyone"], speicalWords))
         wordThread = threading.Thread(target=addWordsToDictionary, args=(userWordsDict, userWordsDictionary["Everyone"], words))
         charThread = threading.Thread(target=addWordsToDictionary, args=(userCharDict, userChar["Everyone"], chars))
+        linkThread = threading.Thread(target=addWordsToDictionary, args=(userLinkDict, userLink["Everyone"], links))
         speicalThread.start()
         wordThread.start()
         charThread.start()
+        linkThread.start()
         speicalThread.join()
         wordThread.join()
         charThread.join()
+        linkThread.join()
     addWords = threading.Thread(target=writeToFileFromDict, args=(wordCountFilePath, userWordsDictionary))
     addSpecials = threading.Thread(target=writeToFileFromDict, args=(specialCountFilePath, userSpeical))
     addChars = threading.Thread(target=writeToFileFromDict, args=(charCountFilePath, userChar))
+    addLinks = threading.Thread(target=writeToFileFromDict, args=(linkCountFilePath, userLink))
     addWords.start()
     addSpecials.start()
     addChars.start()
+    addLinks.start()
     addWords.join()
     addSpecials.join()
     addChars.join()
+    addLinks.join()
     print("Done")
     file.close()
 

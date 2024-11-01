@@ -5,5 +5,6 @@
     "wordCountFile":"Data Files/WordCount.json",
     "specialCountFile":"Data Files/Special.json",
     "characterCountFile":"Data Files/CharacterCount.json",
-    "pingGraph":"Data Files/PingGraph.json"
+    "pingGraph":"Data Files/PingGraph.json",
+    "linksFile":"Data Files/Links.json"
 }
