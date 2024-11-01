@@ -150,7 +150,3 @@ def generateGraph():
     pos = nx.spring_layout(graph)
     nx.draw(graph, pos, with_labels=True, node_size=9000, node_color="skyblue", edge_color="gray")
     plt.show()
-    
-interpretMessage()
-graph()
-generateGraph()

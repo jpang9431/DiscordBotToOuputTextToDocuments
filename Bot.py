@@ -5,6 +5,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 import json
+import Interpret
 
 client = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 
@@ -12,8 +13,18 @@ secertFile = open("config.json")
 fileData = json.load(secertFile)
 
 token = fileData["token"]
+
 fullTextOutputFilePath = fileData["fullTextOutputFilePath"]
 sepicalTextOutputFilePath = fileData["sepicalTextOutputFilePath"]
+
+wordCountFilePath = fileData["wordCountFile"]
+specialCountFilePath = fileData["specialCountFile"]
+charCountFilePath = fileData["characterCountFile"]
+linkCountFilePath = fileData["linksFile"]
+
+files = [fullTextOutputFilePath, sepicalTextOutputFilePath, wordCountFilePath, specialCountFilePath, charCountFilePath, linkCountFilePath]
+
+currentlyProcessing = False
 
 @client.event
 async def on_ready():
@@ -21,7 +32,6 @@ async def on_ready():
     synced = await client.tree.sync()
     print(len(synced))
 
-@client.tree.command(name="getchannelids", description="Get all channel ids")
 async def getChannelIds(interaction: discord.Interaction):
     await interaction.response.send_message("Started Process")
     guild = interaction.guild
@@ -30,7 +40,6 @@ async def getChannelIds(interaction: discord.Interaction):
         await interaction.channel.send("#"+str(channel.id) + ","+channel.name)
     await interaction.channel.send("Done")
 
-@client.tree.command(name="getroleids", description="Get role ids")
 async def getRoleIds(interaction: discord.Interaction):
     await interaction.response.send_message("Started Process")
     guild = interaction.guild
@@ -76,16 +85,21 @@ async def getSpeicalCombinations(interaction: discord.Interaction, speicalEscape
     for i in range(len(speicalEscapes)):
         file.write(speicalEscapes[i]+","+regularReplace[i]+","+typeOfEscape[i]+"\n")
     file.close()    
-    
-@client.tree.command(name="getspecialcombinations", description="Get special escape discord characters")
+
 async def getspecialcombinations(interaction: discord.Interaction):
     speicalEscapes = []
     regularReplace = []
     typeOfEscape = []
     await getSpeicalCombinations(interaction, speicalEscapes, regularReplace, typeOfEscape)
 
-@client.tree.command(name = "outputtotxt", description="Parse through channel text to output it to console")
+@client.tree.command(name="outputtotxt", description="Output and parse data from a discord group")
 async def outputtotxt(interaction: discord.Interaction):
+    global currentlyProcessing
+    if (currentlyProcessing):
+        await interaction.channel.send("Please wait for the current processing to be completed")
+        return
+    else:
+        currentlyProcessing = True
     guild = interaction.guild
     speicalEscapes = []
     regularReplace = []
@@ -113,5 +127,10 @@ async def outputtotxt(interaction: discord.Interaction):
     totalTime = time.time()-totalTime
     await interaction.channel.send(str(count) + " messages by users outputted | "+str(totalTime))
     file.close()
-    
+    Interpret.interpretMessage()
+    Interpret.graph()
+    for filePath in files:
+        await interaction.channel.send(file=discord.File(filePath))
+    currentlyProcessing = False
+   
 client.run(token)
