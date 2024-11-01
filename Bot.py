@@ -99,7 +99,7 @@ async def outputtotxt(interaction: discord.Interaction):
     for channel in channels:
         messagesInChannel = 0
         now = time.time()
-        async for msg in channel.history(limit=20000, oldest_first=True):
+        async for msg in channel.history(limit=2000000, oldest_first=True):
             if (msg.author.global_name!=None and msg.content!=""):
                 strContent = msg.content.replace("\n"," ")
                 for i in range(len(speicalEscapes)):
